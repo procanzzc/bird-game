@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>canvas</title>
+</head>
+<style>
+canvas {
+border:1px solid #ccc;
+}
+</style>
+<body>
+<canvas width=800 height=600></canvas>
+</body>
+<script>
+var canvas = document.querySelector('canvas');
+var ctx = canvas.getContext('2d');
+//绘制小鸟
+var birdImg = new Image();
+birdImg.src = "images/birds.png";
+birdImg.onload = function(){
+    var birdindex = 0;
+    var birdWidth = birdImg.width /3;
+    var birdHeight = birdImg.height;
+    //setinterval 的缺点:
+    //当页面隐藏切换至后台时,birdindex++依然会继续执行
+    //可以使用requestAnimationFrame
+    // setInterval(function(){
+    //     //需要清除重复的绘制
+    //     ctx.clearRect(0,0,canvas.width,canvas.height);
+    //     birdindex ++;
+    //     if(birdindex>2){
+    //         birdindex = 0;
+    //     }
+    //     ctx.drawImage(birdImg,birdWidth*birdindex,0,birdWidth,birdHeight,100,100,birdWidth,birdHeight);
+    // },100);
+   
+    //物理重力加速度计算下落的轨迹和速度
+    //设定画布中的g为0.0003
+    //记录开始的时间并计算落差的时间
+
+    /*
+    计算小鸟的下落速度
+    * V0:初始速度  加速度：g   时间：t
+    * 经过单位时间后，当前的速度计算公式：
+    * Vt=V0 + g*t;
+    * 经过单位时间后，移动的路径，计算公式如下：
+    * S= V0*t+g*t*t/2
+    * */ 
+    var canvasX = 100;
+    var canvasY = 100;
+    //设置起始时间
+    var starttime = new Date();
+    //设置结束时间
+    var endtime = 0;
+    var g = 0.0003;
+    //设置小鸟的下落速度
+    var birdspeed = 0;
+    var birdX = 0,birdY = 0;
+    function fly(){
+        //获取结束时间
+        endtime = new Date();
+        var offsetTime = endtime - starttime;
+        //上一次的结束时间就是下一次的开始时间
+        starttime = endtime;
+        //需要清除重复的绘制
+        var distanceY = birdspeed*offsetTime + g*offsetTime * offsetTime /2;
+        //速度是越来越快的， 所以需要加上前面的速度基线
+        birdspeed = birdspeed + g*offsetTime;
+
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        birdindex ++;
+        if(birdindex>2){
+            birdindex = 0;
+        }
+        birdX = birdWidth*birdindex;
+        //做偏移的是画布而不是小鸟
+        canvasY += distanceY;
+        ctx.drawImage(birdImg,birdX,birdY,birdWidth,birdHeight,canvasX,canvasY,birdWidth,birdHeight);
+        window.requestAnimationFrame(fly);
+    }
+    fly();
+}
+
+
+</script>
+</html>

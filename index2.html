@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>canvas</title>
+</head>
+<style>
+canvas {
+border:1px solid #ccc;
+}
+</style>
+<body>
+<canvas width=800 height=600></canvas>
+</body>
+<script>
+
+
+
+function loadImg(arr,callback){
+    var imgs = {};
+    var count = 0;
+    for(var i=0;i<arr.length;i++){
+        var img = new Image();
+        img.src = "images/"+arr[i]+".png";
+        imgs[arr[i]] = img;
+        img.onload = function(){
+            //设置count记录是否已经全部加载完毕
+            count ++;
+            if(count == arr.length){
+                callback(imgs);
+            }
+        }
+    }
+}    
+
+var canvas = document.querySelector('canvas');
+var ctx = canvas.getContext('2d');
+//绘制小鸟
+loadImg(['birds','sky'],function(imgs){
+    var birdImg = imgs['birds'];
+    var skyImg = imgs['sky'];
+
+    var birdindex = 0;
+    var birdWidth = birdImg.width /3;
+    var birdHeight = birdImg.height;
+    //setinterval 的缺点:
+    //当页面隐藏切换至后台时,birdindex++依然会继续执行
+    //可以使用requestAnimationFrame
+    // setInterval(function(){
+    //     //需要清除重复的绘制
+    //     ctx.clearRect(0,0,canvas.width,canvas.height);
+    //     birdindex ++;
+    //     if(birdindex>2){
+    //         birdindex = 0;
+    //     }
+    //     ctx.drawImage(birdImg,birdWidth*birdindex,0,birdWidth,birdHeight,100,100,birdWidth,birdHeight);
+    // },100);
+   
+    //物理重力加速度计算下落的轨迹和速度
+    //设定画布中的g为0.0003
+    //记录开始的时间并计算落差的时间
+
+    /*
+    计算小鸟的下落速度
+    * V0:初始速度  加速度：g   时间：t
+    * 经过单位时间后，当前的速度计算公式：
+    * Vt=V0 + g*t;
+    * 经过单位时间后，移动的路径，计算公式如下：
+    * S= V0*t+g*t*t/2
+    * */ 
+
+    //画布中小鸟的位置
+    var canvasX = 100;
+    var canvasY = 100;
+    //设置起始时间
+    var starttime = new Date();
+    //设置结束时间
+    var endtime = 0;
+    var g = 0.0003;
+    //设置小鸟的下落速度
+    var birdX = 0,birdY = 0;
+    var birdspeed = 0;
+    
+    //设置的某个位置角度值,通过最大角度和最大速度进行等比例换算
+    //如何得到最大的速度值,当鸟的移动位置到达地面的时候则是最大的速度
+    // currentangle/currentspeed = birdangle/birdmaxspeed
+        //  if(canvasY>canvasY-birdHeight){
+        //     console.log(birdspeed);
+        // }
+    var birdmaxangle = 40;
+    var birdmaxspeed = 0.3;
+    //设置天空移动的时间是2
+    var skyspeed = 2;
+
+    var skyX1 = 0;
+    var skyX2 = skyImg.width;
+    //点击往上飞
+    canvas.onclick = function(){
+        birdspeed = -0.3;
+    }
+    //如果使用时间作为角度的
+    function fly(){
+        //获取结束时间
+        endtime = new Date();
+        var offsetTime = endtime - starttime;
+        //上一次的结束时间就是下一次的开始时间
+        starttime = endtime;
+        //需要清除重复的绘制
+        var distanceY = birdspeed*offsetTime + g*offsetTime * offsetTime /2;
+        //速度是越来越快的， 所以需要加上前面的速度基线
+        birdspeed = birdspeed + g*offsetTime;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+
+        //天空应该在小鸟的背景之下
+       skyX1-=skyspeed;
+       skyX2-=skyspeed;
+       var skywidth = skyImg.width;
+       if(skyX1<=-skywidth){
+        //    skyX1 = skywidth;
+        skyX1 += skywidth *2;
+       }
+       if(skyX2<=-skywidth){
+        //    skyX2 = skywidth;
+        skyX2 += skywidth *2;
+        
+       }
+       ctx.drawImage(skyImg,skyX1,0);
+       ctx.drawImage(skyImg,skyX2,0);
+
+
+        birdindex ++;
+        if(birdindex>2){
+            birdindex = 0;
+        }
+        birdX = birdWidth*birdindex;
+        //做偏移的是画布而不是小鸟
+        canvasY += distanceY;
+        //旋转头部的小鸟
+        var curangle = birdmaxangle/birdmaxspeed * birdspeed;
+        if(curangle>=45){
+            curangle = 45;
+        }
+        //移动的是虚拟的画布,所以需要重新设定画布的原点
+        //重新设置画布的圆点需要偏移画布
+        ctx.save();
+        ctx.translate(canvasX+birdWidth/2,canvasY+birdHeight/2);
+        ctx.rotate(Math.PI/180*curangle);
+        //重新绘制的时候参照的是小鸟在虚拟画布中的位置
+        ctx.drawImage(birdImg,birdX,birdY,birdWidth,birdHeight,-birdWidth/2,-birdHeight/2,birdWidth,birdHeight);
+        ctx.restore();
+        window.requestAnimationFrame(fly);
+        
+    }
+    fly();
+
+
+
+
+})
+
+    
+
+
+
+
+
+</script>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>canvas</title>
+</head>
+<style>
+canvas {
+border:1px solid #ccc;
+}
+</style>
+<body>
+<canvas width=800 height=600></canvas>
+</body>
+<script src="js/birds.js"></script>
+<script src="js/sky.js"></script>
+<script src="js/land.js"></script>
+<script>
+function loadImg(arr,callback){
+    var imgs = {};
+    var count = 0;
+    for(var i=0;i<arr.length;i++){
+        var img = new Image();
+        img.src = "images/"+arr[i]+".png";
+        imgs[arr[i]] = img;
+        img.onload = function(){
+            //设置count记录是否已经全部加载完毕
+            count ++;
+            if(count == arr.length){
+                callback(imgs);
+            }
+        }
+    }
+}    
+var canvas = document.querySelector('canvas');
+var ctx = canvas.getContext('2d');
+
+//绘制小鸟
+loadImg(['birds','sky','land'],function(imgs){
+    var birdImg = imgs['birds'];
+    var skyImg = imgs['sky'];
+    var landimg = imgs['land'];
+
+    var landY = canvas.height - landimg.height;
+    var starttime = new Date();
+    //设置结束时间
+    var endtime = 0;
+  
+    //点击往上飞
+    canvas.onclick = function(){
+        abird.birdspeed = -0.3;
+    }
+    var abird = new Birds({
+        'ctx' : ctx,
+        'birdImg':birdImg,
+        'canvasY':100,
+        'canvasX':100
+
+    }); 
+    var sky1 = new Sky({
+        'ctx':ctx,
+        'skyImg':skyImg
+    });
+    var sky2 = new Sky({
+        'ctx':ctx,
+        'skyImg':skyImg
+    });
+    
+    //将生成好的4个陆地图片对象放进数组,后面遍历数组进行绘制,否则只会绘制一张
+    var lands = [];
+    for(var i=0;i<4;i++){
+        var land = new Land({
+            'ctx':ctx,
+            'landimg':landimg,
+            'landY':landY,
+            'landX':i*landimg.width
+        });
+        lands.push(land);
+    }
+   
+    //如果使用时间作为角度的
+    function fly(){
+    //封装过程中没有把这个一起封装进去,因为这个时间需要小鸟运动之后才存在,new Data()对象也是一个全局的对象
+       endtime = new Date();
+       var offsetTime = endtime - starttime;
+       starttime = endtime;
+
+       ctx.clearRect(0,0,canvas.width,canvas.height);
+        //天空应该在小鸟的背景之下
+       sky1.drawSky();
+       sky2.drawSky();
+
+       //绘制陆地
+       for(var i=0;i<lands.length;i++){
+           var land = lands[i];
+           land.drawLand();
+       }
+       
+       //绘制小鸟
+       abird.drawBirds(offsetTime);
+       window.requestAnimationFrame(fly);
+        
+    }
+    fly();
+
+})
+
+    
+
+
+
+
+
+</script>
+</html>
