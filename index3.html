@@ -18,6 +18,7 @@ border:1px solid #ccc;
 <script src="js/birds.js"></script>
 <script src="js/sky.js"></script>
 <script src="js/land.js"></script>
+<script src="js/pipe.js"></script>
 <script>
 function loadImg(arr,callback){
     var imgs = {};
@@ -39,10 +40,12 @@ var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 
 //绘制小鸟
-loadImg(['birds','sky','land'],function(imgs){
+loadImg(['birds','sky','land','pipe2','pipe1'],function(imgs){
     var birdImg = imgs['birds'];
     var skyImg = imgs['sky'];
     var landimg = imgs['land'];
+    var pipetopimg = imgs['pipe2'];
+    var pipebottomimg = imgs['pipe1'];
 
     var landY = canvas.height - landimg.height;
     var starttime = new Date();
@@ -80,7 +83,17 @@ loadImg(['birds','sky','land'],function(imgs){
         });
         lands.push(land);
     }
-   
+    //管道的绘制类似陆地,6个管道组成1组
+    var pipes = [];
+    for(var i=0;i<6;i++){
+        var pipe = new Pipe({
+            'ctx':ctx,
+            'pipebottomimg':pipebottomimg,
+            'pipetopimg':pipetopimg,
+            'pipeX':300+i*(pipetopimg.width*3)
+        }); 
+        pipes.push(pipe);
+    }
     //如果使用时间作为角度的
     function fly(){
     //封装过程中没有把这个一起封装进去,因为这个时间需要小鸟运动之后才存在,new Data()对象也是一个全局的对象
@@ -93,14 +106,24 @@ loadImg(['birds','sky','land'],function(imgs){
        sky1.drawSky();
        sky2.drawSky();
 
-       //绘制陆地
+      
+       
+       //绘制小鸟
+       abird.drawBirds(offsetTime);
+
+       //绘制管道
+       for(var i=0;i<pipes.length;i++){
+           var apipe = pipes[i];
+           apipe.drawPipe();
+       }
+
+        //绘制陆地
        for(var i=0;i<lands.length;i++){
            var land = lands[i];
            land.drawLand();
        }
-       
-       //绘制小鸟
-       abird.drawBirds(offsetTime);
+
+
        window.requestAnimationFrame(fly);
         
     }
