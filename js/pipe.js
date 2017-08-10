@@ -34,8 +34,12 @@ Pipe.prototype = {
             this.pipetopY = Math.random()*300-400;
             this.pipebottomY =  this.pipetopY+this.pipeheight+this.pipeoffsetY;
         }
+
+        //要判断是否碰撞到管道,使用
         this.ctx.drawImage(this.pipetopimg,this.pipeX,this.pipetopY);
+        this.ctx.rect(this.pipeX,this.pipetopY,this.pipewidth,this.pipeheight);
         this.ctx.drawImage(this.pipebottomimg,this.pipeX,this.pipebottomY);
+        this.ctx.rect(this.pipeX,this.pipebottomY,this.pipewidth,this.pipeheight);
         
 
     }   

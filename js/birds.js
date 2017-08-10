@@ -9,7 +9,7 @@ function Birds(Option){
     this.birdX = 0;
     this.birdY = 0;
     this.birdmaxangle = 40;
-    this.birdmaxspeed = 0.4;
+    this.birdmaxspeed = 0.42;
     this.birdindex = 0;
     this.birdspeed = 0;
     this.birdWidth = this.birdImg.width/3;

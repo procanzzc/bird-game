@@ -102,6 +102,9 @@ loadImg(['birds','sky','land','pipe2','pipe1'],function(imgs){
        starttime = endtime;
 
        ctx.clearRect(0,0,canvas.width,canvas.height);
+
+       ctx.beginPath();
+
         //天空应该在小鸟的背景之下
        sky1.drawSky();
        sky2.drawSky();
@@ -122,8 +125,17 @@ loadImg(['birds','sky','land','pipe2','pipe1'],function(imgs){
            var land = lands[i];
            land.drawLand();
        }
-
-
+       //console.log(abird.canvasY);
+       //计算小鸟是否碰撞到天空和陆地
+       var abirdfail = abird.canvasY;
+       if(abirdfail<0 || abirdfail> canvas.height - birdImg.height - landimg.height){
+           return;
+       }
+       /*判断小鸟是否撞到管道*/
+       //判断的过程中需要开启新的路径
+            if(ctx.isPointInPath(abird.canvasX + birdImg.width / 6,abird.canvasY + birdImg.height / 2)){
+                return;
+            }
        window.requestAnimationFrame(fly);
         
     }
